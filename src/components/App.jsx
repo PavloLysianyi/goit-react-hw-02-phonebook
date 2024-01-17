@@ -2,20 +2,14 @@ import React from 'react';
 import { nanoid } from 'nanoid';
 
 class ContactForm extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      name: '',
-      number: '',
-    };
-  }
-
-  handleNameChange = event => {
-    this.setState({ name: event.target.value });
+  state = {
+    name: '',
+    number: '',
   };
 
-  handleNumberChange = event => {
-    this.setState({ number: event.target.value });
+  handleInputChange = event => {
+    const { name, value } = event.target;
+    this.setState({ [name]: value });
   };
 
   handleAddContact = () => {
@@ -27,7 +21,9 @@ class ContactForm extends React.Component {
       return;
     }
 
-    const isNameExists = contacts.some(contact => contact.name === name);
+    const isNameExists = contacts.some(
+      contact => contact.name.toLowerCase() === name.toLowerCase()
+    );
 
     if (isNameExists) {
       alert(`Контакт з ім'ям ${name} вже існує у телефонній книзі.`);
@@ -58,7 +54,7 @@ class ContactForm extends React.Component {
             type="text"
             name="name"
             value={name}
-            onChange={this.handleNameChange}
+            onChange={this.handleInputChange}
             required
             className="input"
           />
@@ -69,7 +65,7 @@ class ContactForm extends React.Component {
             type="tel"
             name="number"
             value={number}
-            onChange={this.handleNumberChange}
+            onChange={this.handleInputChange}
             required
             className="input"
           />
@@ -86,63 +82,60 @@ class ContactForm extends React.Component {
   }
 }
 
-class Filter extends React.Component {
-  render() {
-    const { filter, onFilterChange } = this.props;
+const Filter = ({ filter, onFilterChange }) => (
+  <div>
+    Пошук контактів за ім'ям
+    <input
+      type="text"
+      value={filter}
+      onChange={onFilterChange}
+      className="input"
+    />
+  </div>
+);
 
-    return (
-      <div>
-        Пошук контактів за ім'ям
-        <input
-          type="text"
-          value={filter}
-          onChange={onFilterChange}
-          className="input"
-        />
-      </div>
-    );
-  }
-}
-
-class ContactList extends React.Component {
-  render() {
-    const { contacts, onDeleteContact } = this.props;
-
-    return (
-      <ul className="list">
-        {contacts.map(contact => (
-          <li key={contact.id} className="list-item">
-            <span className="contact-info">
-              {contact.name} - {contact.number}
-            </span>
-            <button
-              type="button"
-              onClick={() => onDeleteContact(contact.id)}
-              className="delete-button"
-            >
-              Видалити
-            </button>
-          </li>
-        ))}
-      </ul>
-    );
-  }
-}
+const ContactList = ({ contacts, onDeleteContact }) => (
+  <ul className="list">
+    {contacts.map(contact => (
+      <li key={contact.id} className="list-item">
+        <span className="contact-info">
+          {contact.name} - {contact.number}
+        </span>
+        <button
+          type="button"
+          onClick={() => onDeleteContact(contact.id)}
+          className="delete-button"
+        >
+          Видалити
+        </button>
+      </li>
+    ))}
+  </ul>
+);
 
 class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      contacts: [],
-      filter: '',
-    };
-  }
+  state = {
+    contacts: [],
+    filter: '',
+  };
 
   handleFilterChange = event => {
     this.setState({ filter: event.target.value });
   };
 
   handleAddContact = newContact => {
+    const { name } = newContact;
+    const { contacts } = this.state;
+
+    const isNameExists = contacts.some(
+      contact => contact.name.toLowerCase() === name.toLowerCase()
+    );
+
+    if (isNameExists) {
+      alert(`Контакт з ім'ям ${name} вже існує у телефонній книзі.`);
+      return;
+    }
+
     this.setState(prevState => ({
       contacts: [...prevState.contacts, newContact],
     }));
